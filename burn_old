@@ -1,0 +1,185 @@
+from collections import defaultdict
+import csv
+import regex as re
+
+class Enzyme():
+
+    def __init__(self, id, name, num, ref):
+        self.id = id
+        self.name = name
+        self.num = num
+        self.ref = ref
+        self.enzyme_annots = defaultdict(list)
+        self.enzyme_annots["species"] = " ".join(self.name.split(" ")[0:2])
+        self.enzyme_annots["id"] = self.id
+
+    def __str__(self):
+        return self.name
+
+    def add_annotation(self, field, annotation, prefix_text=""):
+
+
+
+        if annotation.strip() != "":
+
+            # annotation = "YES"
+
+            self.enzyme_annots[field].append(prefix_text + annotation.strip())
+
+def parse_brenda(filename, annot_dict = {}, uniprot_mapping=False, add_commonalities=True, add_comments=True):
+
+    # Regex for extracting the protein name
+    prot_name_regex = re.compile('PR\t#\d+#(?P<prot_name>[\w\s.-]*)(?=\<)')
+
+    # Regex for extracting the protein ID (if it exists)
+    prot_id_regex = re.compile('[\d\w._]*\s(?=UniProt|GenBank|SwissProt)')
+
+    annot_regex = re.compile('(?<=\w{2}[\t]#)(\d+(,)?)+(?=#)')
+    annot_regex = re.compile('(?<=\w{2}[\t]#)(P<main>,(\d+(,)?)+)')
+    annot_regex = re.compile('(?<=\w{2}[\t]#)(?P<main>(\d+(,)?)+)(....)+(?=r)')
+    annot_regex = re.compile('(?<=\w{2}[\t]#)(?P<main>(\d+(,)?)+)')
+
+    # annot_regex = re.compile('(?<=\w{2}[\t]#)(?P<main>(\d+(,)?)+)(?P<annot>(?<=#\s).*(?=[\(]))')
+    combined_regex = re.compile('(?<=\w{2}[\t]#)(?P<main>(\d+(,)?)+)|(?P<annot>liver(?=[\s\t]+[\(]))')
+    main_regex = re.compile('(?<=\w{2}[\t]#)(?P<main>(\d+(,)?)+)')
+
+    annot_regex = re.compile('(?P<annot>(?<=#\s).*(?=[\s\t]+[\(]))')
+
+    main_regex = '(?<=\w{2}[\t]#)(?P<main>(\d+(,)?)+)'
+
+    annot_regex = '(?P<annot>(?<=#\s).*(?=[\s\t]+[\(]))'
+
+    # combined_regex = re.compile("(%s|%s)" % (main_regex, annot_regex))
+
+    main_regex = re.compile(main_regex)
+
+    annot_regex = re.compile(annot_regex)
+
+    print (combined_regex)
+
+    # combined_regex = re.compile('((?<=\w{2}[\t]#)(?P<main>(\d+(,)?)+))|(?P<annot>(?<=#\s).*(?=[\s\t]+[\(]))')
+
+
+    chunk = ""
+    end_pattern = "\r*\n"
+
+    match = False
+
+    annot_regex = re.compile('((?<=#\s)(?P<annot>.*(?=[\s\t]+[\(])))')
+
+    combined_regex = re.compile('((?<=\w{2}[\t]#)(?P<main>(\d+(,)?)+))|((?<=#\s)(?P<annot>.*(?=[\s\t]+[\(])))')
+
+
+    combined_regex = re.compile('((?P<main>73)|(?P<again>liver \(#5))')
+
+    combined_regex = re.compile('((?<=\w{2}[\t]#)(?P<main>(\d+(,)?)+))#\s+(?P<annot>.*(?=[\s\t]+[\(]))')
+
+    combined_regex = re.compile('((?<=\w{2}[\t]#)(?P<main>(\d+(,)?)+))#\s+(?P<annot>.*(?=[\s\t]+[\(]))')
+
+
+
+    for line in open(filename):
+        if  prot_name_regex.match(line):
+            hit = prot_name_regex.match(line)
+            prot_name = hit.group('prot_name').strip()
+
+
+            prot_id = prot_id_regex.search(prot_name).group(0) if prot_id_regex.search(prot_name) else ""
+            prot_species = " ".join(prot_name.split(" ")[0:2])
+
+            # print ("NAME ",  prot_name)
+            # print ("ID ", prot_id)
+            # print ("SPECIES ", prot_species)
+        else:
+            if line.strip() in annot_dict.keys():
+                match = True
+                continue
+            elif re.match(end_pattern, line):
+                match = False
+                if len(chunk) > 4: # Skip blank lines and annotations with not information
+                    print(chunk)
+
+
+                    annots = combined_regex.finditer(chunk)
+
+                    print (annots)
+                    for x in annots:
+                        print (x.groupdict())
+
+                    #
+                    # annots = combined_regex.finditer(chunk)
+                    #
+                    # # print (combined_regex.groupindex)
+                    # #
+                    # # names_used = [name for name, value in x.groupdict().iteritems() if value is not None]
+                    # # print (names_used)
+                    # for x in annots:
+                    #     # print (x)
+                    #     names_used = [name for name, value in x.groupdict().items() if value is not None]
+                    #     print(names_used)
+
+                        # print (x.groupdict())
+
+
+
+                        # for annot in annots:
+                    #     print (annot.groupdict())
+                    #
+                    # print ()
+                    # print (annots)
+                    # print (annots['main'])
+                    # for annot in annots:
+                    #     print (annot)
+                chunk = ""
+
+                continue
+
+            elif match:
+                chunk += line
+
+
+    # num_to_enzyme = {}
+    #
+    # annotation = ""
+    # pos = 0
+    #
+    # # Regex for extracting the protein name
+    # prot_name_regex = re.compile('PR\t#\d+#(?P<prot_name>[\w\s.-]*)(?=\<)')
+    #
+    # # Regex for extracting the protein ID (if it exists)
+    # prot_id_regex = re.compile('[\d\w._]*\s(?=UniProt|GenBank|SwissProt)')
+    #
+    # #Regex for extracting the annotations
+    # st = re.compile('ST\t.*')
+    #
+    # buffer = open(filename).read()
+    #
+    # st_str = st.finditer(open(filename).read(), re.MULTILINE, re.DOTALL)
+    #
+    # for x in st_str:
+    #     print (x)
+    #
+    # name_str = prot_name_regex.finditer(buffer)
+    #
+    # for hit in prot_name_regex.finditer(buffer):
+    #     prot_name = hit['prot_name'].strip()
+    #     # prot_name = name_str.group('prot_name').strip()
+    #     prot_id = prot_id_regex.search(prot_name).group(0) if prot_id_regex.search(prot_name) else ""
+    #     prot_species = " ".join(prot_name.split(" ")[0:2])
+    #
+    #     print ("NAME ",  prot_name)
+    #     print ("ID ", prot_id)
+    #     print ("SPECIES ", prot_species)
+
+
+
+annot_dict = { "NAME" : "", "KM_VALUE": "KM", "EXPRESSION": "EXP", "SYSTEMATIC_NAME" : "SN", "SUBSTRATE_PRODUCT":
+    "SP", "SPECIFIC_ACTIVITY" : "SA", "SOURCE_TISSUE" : "ST", "KI_VALUE" : "KI"}
+
+
+num_to_enzyme = parse_brenda('brenda_regex_cut.txt', annot_dict, add_commonalities=False, add_comments=False)
+
+# for enzyme in num_to_enzyme.values():
+#     print (enzyme.name)
+#     print (enzyme.enzyme_annots)
+#

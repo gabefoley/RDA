@@ -1,0 +1,31 @@
+{% extends "layout.html" %}
+
+{% block head %}
+{{ super() }}
+<link href="static/css/multi-select.css" media="screen" rel="stylesheet" type="text/css">
+{% endblock %}
+
+
+{% block page_content %}
+
+
+
+{% import "bootstrap/wtf.html" as wtf %}
+
+<form method="POST"    enctype="multipart/form-data">
+
+    {{ form.hidden_tag() }}
+
+<div style="width: 30%">
+
+{{ wtf.form_field(form.upload_seqs) }}
+    {{ wtf.form_field(form.upload_submit) }}
+
+</div>
+    <br><br>
+</form>
+
+
+
+{% endblock %}
+

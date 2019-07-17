@@ -1,0 +1,158 @@
+{% extends "layout.html" %}
+
+{% block head %}
+{{ super() }}
+<link href="static/css/rda.css" media="screen" rel="stylesheet" type="text/css">
+
+<link href="static/css/multi-select.css" media="screen" rel="stylesheet" type="text/css">
+
+
+
+
+<script type="text/javascript">
+jQuery(document).ready(function() {
+
+    // Use multi-select js on the select fields
+
+    $('#uniprot_select').multiSelect({ keepOrder: true });
+    $('#brenda_select').multiSelect({ keepOrder: true });
+
+
+});
+</script>
+{% endblock %}
+
+
+{% block page_content %}
+
+
+{% import "bootstrap/wtf.html" as wtf %}
+
+
+<div id="current_file">
+
+    Retrieving annotations for {{current_file}}.
+
+    <link href="{{url_for('index') }}" Click here to start again with new file.>
+
+
+</div>
+
+
+<form method="POST"    enctype="multipart/form-data">
+
+{{ form.hidden_tag() }}
+<div style="width: 30%">
+{{ wtf.form_field(form.database) }}
+</div>
+</form>
+<form method="POST"    enctype="multipart/form-data">
+    <div id="uniprot">
+
+        {{ wtf.form_field(uniprot_form.uniprot_select) }}
+        {{ wtf.form_field(uniprot_form.uniprot_retrieve) }}
+
+    </div>
+</form>
+<form method="POST"    enctype="multipart/form-data">
+
+<div id="brenda">
+
+    {{ wtf.form_field(brenda_form.brenda_upload) }}
+
+    {{ brenda_form.brenda_species(checked='True') }}
+    {{ brenda_form.brenda_species.label }}
+    <br>
+
+    {{ brenda_form.brenda_ubiquitous(checked='True') }}
+    {{ brenda_form.brenda_ubiquitous.label }}
+
+    <br>
+    {{ brenda_form.brenda_comments(checked='True') }}
+    {{ brenda_form.brenda_comments.label }}
+
+        <br>
+
+
+    {{ wtf.form_field(brenda_form.brenda_select) }}
+    {{ wtf.form_field(brenda_form.brenda_retrieve) }}
+</div>
+</form>
+
+</br></br>
+</form>
+
+<form method="POST"    enctype="multipart/form-data">
+
+{{ download_form.hidden_tag() }}
+
+    {{ wtf.form_field(download_form.download) }}
+
+</form>
+</div>
+
+{% endblock %}
+
+
+{% block scripts %}
+
+    {% if selected == 'uniprot' %}
+    <script type="text/javascript">
+    $("#brenda").addClass("hidden");
+    $("#uniprot").removeClass("hidden");
+
+    </script>
+
+{% elif selected == 'brenda' %}
+
+    <script type="text/javascript">
+    $("#uniprot").addClass("hidden");
+    $("#brenda").removeClass("hidden");
+
+    </script>
+
+    {% else  %}
+
+    <script type="text/javascript">
+    $("#uniprot").removeClass("hidden");
+    $("#brenda").addClass("hidden");
+
+    </script>
+
+    {% endif %}
+
+
+<script type="text/javascript">
+
+
+jQuery(document).ready(function() {
+
+    // Use multi-select js on the select fields
+
+    $('#uniprot_select').multiSelect({ keepOrder: true });
+    $('#brenda_select').multiSelect({ keepOrder: true });
+
+
+
+    $('#database').on('change', function() {
+      if ( this.value == 'UniProt')
+      {
+          $("#brenda").addClass("hidden");
+          $("#uniprot").removeClass("hidden");
+
+      }
+      else
+      {
+          $("#uniprot").addClass("hidden");
+          $("#brenda").removeClass("hidden");
+
+      }
+    });
+});
+</script>
+
+<script src="static/js/jquery.multi-select.js" type="text/javascript"></script>
+
+
+
+{% endblock %}
