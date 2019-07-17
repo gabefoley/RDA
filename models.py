@@ -21,7 +21,7 @@ class UploadForm(FlaskForm):
 
 class BrendaForm(FlaskForm):
     brenda_upload = FileField('Upload your BRENDA annotation file', validators=[DataRequired()])
-    brenda_species = BooleanField('Map based on species name, not UniProt ID')
+    brenda_species = BooleanField('Map based on organism name, not UniProt ID')
     brenda_ubiquitous = BooleanField('Add annotations common to all')
     brenda_comments = BooleanField('Add annotations found in comments')
 
