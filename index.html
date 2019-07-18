@@ -61,7 +61,13 @@
         
             <li><a class="toctree-l3" href="#brenda-options">BRENDA options</a></li>
         
-            <li><a class="toctree-l3" href="#detailed-explanation">Detailed explanation</a></li>
+            <li><a class="toctree-l3" href="#splitting-the-organism-name">Splitting the organism name</a></li>
+        
+            <li><a class="toctree-l3" href="#detailed-explanation-of-combining-annotations">Detailed explanation of combining annotations</a></li>
+        
+            <li><a class="toctree-l3" href="#editing-tsv-files">Editing .tsv files</a></li>
+        
+            <li><a class="toctree-l3" href="#blank-columns-and-rows">Blank columns and rows</a></li>
         
         </ul>
     
@@ -113,7 +119,7 @@
 </ul>
 <h3 id="brenda-annotations">BRENDA annotations</h3>
 <ul>
-<li>Go to <a href="https://www.brenda-enzymes.org">BRENDA database</a> and search for the enzyme or ligand of interest.</li>
+<li>Go to <a href="https://www.brenda-enzymes.org">BRENDA database</a> and search for the protein of interest.</li>
 <li>At the bottom of this page, scroll down to the very bottom and select <ul>
 <li>Download</li>
 <li>BRENDA Textfile</li>
@@ -122,9 +128,268 @@
 <li>Upload this BRENDA annotations file (this is what is parsed by RDA)</li>
 </ul>
 <h3 id="combining-annotations">Combining annotations</h3>
-<p>It is fine to add annotations from multiple databases</p>
+<p>It is fine to add annotations from multiple databases, simply select retrieve each set of annotations before downloading the annotation file. For a more detailed explanation of how combining annotations works please see the <a href="#detailed">Detailed explanation of combining annotations</a> section. </p>
 <h2 id="brenda-options">BRENDA options</h2>
-<h2 id="detailed-explanation">Detailed explanation</h2>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Upload your BRENDA annotation file</strong></td>
+<td>Upload the file which you want RDA to parse</td>
+<td><em>Required</em></td>
+</tr>
+<tr>
+<td><strong>Map based on species name, not UniProt ID</strong></td>
+<td>BRENDA annotations sometimes contain information at the organism level, but not tied to specific UniProt records. <br><br>Selecting this option annotates the associated organisms in your uploaded FASTA file. <br><br>These are based on the organisms the species map to in UniProt.</td>
+<td><em>True</em></td>
+</tr>
+<tr>
+<td><strong>Add annotations common to all</strong></td>
+<td>When an annotation is found that is common to all proteins in the BRENDA text file (<em>not necessarily all proteins in the uploaded FASTA file</em>) add it</td>
+<td><em>True</em></td>
+</tr>
+<tr>
+<td><strong>Add annotations found in comments</strong></td>
+<td>Add annotations found in comment fields. Note: These can often contain important information</td>
+<td><em>True</em></td>
+</tr>
+</tbody>
+</table>
+<p><a name="splitting"></a></p>
+<h2 id="splitting-the-organism-name">Splitting the organism name</h2>
+<p>If you are choosing to annotate from BRENDA you have the option of mapping from organism name, not UniProt ID. In these cases, RDA only selects the first two words of the organism name from the BRENDA annotation file <em>and</em> from the UniProt organism field in a means to better associate them, as each database sometimes appends additional information to this field.</p>
+<p>For example -</p>
+<pre><code>Zymomonas mobilis subsp. mobilis P0DJA2 UniProt 
+</code></pre>
+
+<p>Would become</p>
+<pre><code>Zymomonas mobilis
+</code></pre>
+
+<p>To assess how well this has worked for your particular case, RDA outputs the following columns -</p>
+<table>
+<thead>
+<tr>
+<th>organism_uniprot</th>
+<th>organism_brenda</th>
+<th>organism_split</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p>So that any that are mapping incorrectly can be manually removed.</p>
+<p>Q97UB2  Saccharolobus solfataricus (strain ATCC 35092 / DSM 1617 / JCM 11322 / P2) (Sulfolobus solfataricus)
+V9S9Y9  Sulfolobus acidocaldarius SUSAZ
+A1B3F3  Paracoccus denitrificans</p>
+<p><a name="detailed"></a></p>
+<h2 id="detailed-explanation-of-combining-annotations">Detailed explanation of combining annotations</h2>
+<p>Lets assume we have the following files</p>
+<p><strong>FASTA file</strong> - seqs.fasta that has the following headers -</p>
+<pre><code>&gt;tr|V9S9Y9|V9S9Y9_9CREN 
+&gt;sp|Q97UB2|ILVD_SULSO 
+&gt;tr|A1B3F3|A1B3F3_PARDP
+</code></pre>
+
+<p><strong>BRENDA annotations file</strong> that has the following proteins -</p>
+<pre><code>PROTEIN
+PR    #1# Salmonella enterica subsp. enterica serovar Typhimurium   &lt;10,12,16&gt;
+PR    #2# Paracoccus denitrificans   &lt;6&gt;
+PR    #21# Corynebacterium glutamicum Q8NQZ9 UniProt &lt;34,36&gt;
+PR    #22# Sulfolobus solfataricus Q97UB2 SwissProt &lt;28,39&gt;
+</code></pre>
+
+<p>And we want to retrieve the annotation for <code>SUBSTRATE_PRODUCT</code> from BRENDA and the annotation for <code>mass</code> from UniProt</p>
+<h4 id="1-first-lets-try-just-retrieving-annotations-from-brenda-based-on-uniprot-id">1. First let's try just retrieving annotations from BRENDA based on UniProt ID</h4>
+<p>RDA can automatically retrieve the UniProt IDs from the <strong>BRENDA annotations file</strong>, but we can see from that file the only UniProt / SwissProt IDs that are present in that file are <code>Q8NQZ9</code> and <code>Q97UB2</code>.</p>
+<p>And we can see that from our <strong>FASTA file</strong> only <code>Q97UB2</code> is present there.</p>
+<p>So, our final annotations file to download will look like -</p>
+<table>
+<thead>
+<tr>
+<th>id</th>
+<th>SUBSTRATE_PRODUCT_brenda</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Q97UB2</td>
+<td>FIXME substrate product</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Note:we automatically add a suffix indicating which database the field refers to, in order to differentiate between them</strong></p>
+<h4 id="2-now-lets-try-retrieving-annotations-from-brenda-based-on-the-organism-name">2. Now let's try retrieving annotations from BRENDA based on the organism name</h4>
+<p>RDA can also match up the organism names between a <strong>BRENDA annotations file</strong> and a <strong>FASTA file</strong>. For more information see the <a href="#splitting">Splitting the organism name</a> section.</p>
+<p>RDA first maps all of the UniProt IDs in the <strong>FASTA file</strong> to their organism names, then splits the first two words from this annotation, resulting in a file like this -</p>
+<table>
+<thead>
+<tr>
+<th>id</th>
+<th>organism_uniprot</th>
+<th>organism_split</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Q97UB2</td>
+<td>Saccharolobus solfataricus (strain ATCC 35092 / DSM 1617 / JCM 11322 / P2) (Sulfolobus solfataricus)</td>
+<td>Saccharolobus solfataricus</td>
+</tr>
+<tr>
+<td>V9S9Y9</td>
+<td>Sulfolobus acidocaldarius SUSAZ</td>
+<td>Sulfolobus acidocaldarius</td>
+</tr>
+<tr>
+<td>A1B3F3</td>
+<td>Paracoccus denitrificans</td>
+<td>Paracoccus denitrificans</td>
+</tr>
+</tbody>
+</table>
+<p>From the <strong>BRENDA annotations file</strong> we can see that the organisms (after splitting) present are <code>Salmonella enterica</code>, <code>Paracoccus denitrificans</code>, <code>Corynebacterium glutamicum</code>, and <code>Sulfolobus solfataricus</code> - meaning we will be able to map both <code>Paracoccus denitrificans</code> and <code>Sulfolobus solfataricus</code> to their BRENDA annotations.</p>
+<p>So, our final annotations file to download will look like (scroll to see all columns) -</p>
+<table>
+<thead>
+<tr>
+<th>id</th>
+<th>organism_uniprot</th>
+<th>organism_brenda</th>
+<th>organism_split</th>
+<th>SUBSTRATE_PRODUCT_brenda</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Q97UB2</td>
+<td>Saccharolobus solfataricus (strain ATCC 35092 / DSM 1617 / JCM 11322 / P2) (Sulfolobus solfataricus)</td>
+<td>Sulfolobus solfataricus Q97UB2 SwissProt</td>
+<td>Sulfolobus solfataricus</td>
+<td>'2,3-dihydroxy-3-methylpentanoate = 3-methyl-2-oxopentanoate + H2O'</td>
+</tr>
+<tr>
+<td>A1B3F3</td>
+<td>Paracoccus denitrificans</td>
+<td>Paracoccus denitrificans</td>
+<td>Paracoccus denitrificans</td>
+<td>FIXME_substrate</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Note: If there are multiple UniProt IDs that map to the same organism name, all of them will received the BRENDA annotations associated with that organism</strong></p>
+<h4 id="3-now-lets-try-retrieving-annotations-from-uniprot">3. Now let's try retrieving annotations from UniProt</h4>
+<p>Retrievals from UniProt always work just on UniProt ID. Remember that we're looking for the annotation for <code>mass</code> from UniProt (as opposed to the annotation for <code>SUBSTRATE_PRODUCT</code> from BRENDA).</p>
+<p>Because it is based on UniProt ID, we will be able to map any sequences in the <strong>FASTA file</strong> with a UniProt / SwissProt ID.</p>
+<p>So the final annotations file to download will look like - </p>
+<table>
+<thead>
+<tr>
+<th>id</th>
+<th>mass_uniprot</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>V9S9Y9</td>
+<td>59,780</td>
+</tr>
+<tr>
+<td>Q97UB2</td>
+<td>59,422</td>
+</tr>
+<tr>
+<td>A1B3F3</td>
+<td>63,455</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Note: We don't add in organism name FIXME: SHOULD WE?</strong></p>
+<h4 id="4-now-lets-try-combining-retrievals-from-uniprot-and-brenda">4. Now let's try combining retrievals from UniProt and BRENDA</h4>
+<p>To combine retrievals, we upload a single FASTA file, add annotations from UniProt and BRENDA (in any order) <em>and then</em> download the annotation file.</p>
+<p>If we choose to combine a UniProt retrieval with a BRENDA based on UniProt ID, it will end up looking like this </p>
+<table>
+<thead>
+<tr>
+<th>id</th>
+<th>mass_uniprot</th>
+<th>SUBSTRATE_PRODUCT_brenda</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>V9S9Y9</td>
+<td>59,780</td>
+<td></td>
+</tr>
+<tr>
+<td>Q97UB2</td>
+<td>59,422</td>
+<td>'2,3-dihydroxy-3-methylpentanoate = 3-methyl-2-oxopentanoate + H2O'</td>
+</tr>
+<tr>
+<td>A1B3F3</td>
+<td>63,455</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Note: As long as there is at least one annotation for a protein, it will be included</strong></p>
+<p>If we choose to combine a UniProt retrieval with a BRENDA based on organism name, it will end up looking like this </p>
+<table>
+<thead>
+<tr>
+<th>id</th>
+<th>organism_uniprot</th>
+<th>organism_brenda</th>
+<th>organism_split</th>
+<th>mass_uniprot</th>
+<th>SUBSTRATE_PRODUCT_brenda</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>V9S9Y9</td>
+<td>Sulfolobus acidocaldarius SUSAZ</td>
+<td></td>
+<td></td>
+<td>59,780</td>
+<td></td>
+</tr>
+<tr>
+<td>Q97UB2</td>
+<td>Saccharolobus solfataricus (strain ATCC 35092 / DSM 1617 / JCM 11322 / P2) (Sulfolobus solfataricus)</td>
+<td>Sulfolobus solfataricus Q97UB2 SwissProt</td>
+<td>Saccharolobus solfataricus</td>
+<td>59,422</td>
+<td>'2,3-dihydroxy-3-methylpentanoate = 3-methyl-2-oxopentanoate + H2O'</td>
+</tr>
+<tr>
+<td>A1B3F3</td>
+<td>Paracoccus denitrificans</td>
+<td>Paracoccus denitrificans</td>
+<td>Paracoccus denitrificans</td>
+<td>63,455</td>
+<td>FIXME substrate</td>
+</tr>
+</tbody>
+</table>
+<h2 id="editing-tsv-files">Editing .tsv files</h2>
+<p>The downloaded annotation file is a .tsv file, we can easily be edited to remove, merge, or add to columns in any programming language or tool such as Microsoft's Excel.</p>
+<p>Manually creating or adding in additional columns and annotations will also work and allow them to be mapped and queried by <a href="https://grasp.scmb.uq.edu.au">GRASP</a>. </p>
+<h2 id="blank-columns-and-rows">Blank columns and rows</h2>
+<p>In order to make the process as transparent as possible, RDA does not remove columns or rows that end up blank, opting instead to pass these back to the user so that it can be clear which fields didn't map.</p>
               
             </div>
           </div>
@@ -164,5 +429,5 @@
 
 <!--
 MkDocs version : 1.0.4
-Build Date UTC : 2019-07-17 05:19:27
+Build Date UTC : 2019-07-18 02:30:47
 -->
