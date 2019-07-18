@@ -41,12 +41,9 @@ def index():
 
 
         elif uniprot_form.uniprot_retrieve.data:
-            print ('here')
 
             # Get list of columns we want to annotate
             columns = request.form.getlist("uniprot_select")
-
-            print ('columns ', columns)
 
             # Retrieve them from UniProt
             seq_array = pd.read_msgpack(session['seq_array'])
@@ -54,10 +51,18 @@ def index():
 
             print ('seq array ')
             print (seq_array)
+            seq_array.set_index('id')
+
+
+            # Check if user is specifically asking for organism and if it should be retained
+            if 'organism' in columns:
+                session['keep_organism'] = True
 
             # Check if we need to explicitly map to species (i.e. we haven't already or aren't just about to)
             if not 'organism' in seq_array and 'organism' not in columns:
                 columns.insert(0, 'organism')
+
+
 
             # Retrieve the UniProt annotations
             uniprot_dict = webservice.getUniProtDict(id_list, columns)
@@ -87,6 +92,19 @@ def index():
             if not 'organism' in seq_array:
                 seq_array = pd.DataFrame.from_dict(uniprot_dict, orient='index', columns = ['organism',
                                                                                             'organism_split'] )
+
+                print ('problem area is here ')
+                print (seq_array)
+
+                # seq_array = seq_array.rename(columns={seq_array.columns[0]: "id"})
+                seq_array.index.name = 'id'
+
+                # seq_array.set_index('id')
+
+                print ('problem was renamed ')
+                print (seq_array)
+
+
             session['seq_array'] = seq_array.to_msgpack()
 
             flash(u'Retrieved UniProt annotations', 'success')
@@ -106,7 +124,15 @@ def index():
             print('here is seq array ')
             print(seq_array)
 
-            id_list = list(seq_array.index.values)
+            # seq_array.set_index('id')
+
+
+            # id_list = seq_array['id'].values.tolist()
+            # id_list = seq_array['id'].values.tolist()
+
+            id_list = seq_array.index.array
+
+
             # Get list of columns we want to get annotations for
             columns = request.form.getlist("brenda_select")
 
@@ -128,6 +154,8 @@ def index():
             brenda_dict = {}
 
             for prot in num_to_prot.values():
+                print (prot.name)
+                print (prot.prot_annots)
 
                 # If we're mapping based on species, add everything
                 if brenda_species:
@@ -135,7 +163,6 @@ def index():
 
                 # Else we need to check that our annotated ID from the BRENDA file is in our FASTA file
                 else:
-                    print ('adding it all')
                     if prot.id in id_list:
                         brenda_dict[prot.name] = prot.prot_annots
 
@@ -199,6 +226,11 @@ def index():
                 print ('And after dropping entries without an ID ')
                 print (brenda_array)
 
+            brenda_array.set_index('id')
+
+            print ('brenda array before packing is ')
+            print (brenda_array)
+
             session['brenda_array'] = brenda_array.to_msgpack()
 
             flash('Retrieved BRENDA annotations', 'success')
@@ -214,6 +246,7 @@ def index():
             print ('Download the data')
 
             if 'uniprot_array' in session:
+                print ('uniprot array was in session')
                 uniprot_array = pd.read_msgpack(session['uniprot_array'])
                 uniprot_array.columns = uniprot_array.columns.map(lambda x: x + '_uniprot' if x != 'id' and x != 'Name'
                 else x)
@@ -222,7 +255,11 @@ def index():
                 uniprot_array = pd.DataFrame()
 
             if 'brenda_array' in session:
+                print ('brenda array was in session')
+                print ('brenda after unpacking is ')
                 brenda_array = pd.read_msgpack(session['brenda_array'])
+                print (brenda_array)
+
                 brenda_array.columns = brenda_array.columns.map(lambda x: x + '_brenda' if x != 'id' else x)
             else:
                 brenda_array = pd.DataFrame()
@@ -246,8 +283,34 @@ def index():
             print ('Final array is ')
             print (final_array)
 
+            droplist = []
+            dropcheck = ['organism_split_uniprot','organism_brenda', 'organism_split_brenda', 'organisim_x_brenda',
+                         'organism_y_brenda', 'organism_x_uniprot', 'organism_y_uniprot']
+
+
+            if 'brenda_species' in session:
+                print ('brenda species in session')
+                if not session['brenda_species']:
+                    droplist = [i for i in final_array.columns if i in dropcheck]
+            else:
+                droplist = [i for i in final_array.columns if i in dropcheck]
+
+            if 'keep_organism' in session:
+                print ('keep organism in session')
+                if not session['keep_organism']:
+                    droplist += (i for i in ['organism_uniprot', 'organism_split_uniprot'] if i not in droplist and i
+                                 in final_array.columns)
+            else:
+                droplist += (i for i in ['organism_uniprot', 'organism_split_uniprot'] if i not in droplist and i in
+                             final_array.columns)
+
+            print (droplist)
+            print (type(droplist))
+
+            final_array.drop(droplist, axis=1, inplace=True)
+
             # Drop any records that don't have at least 2 columns annotated (ID will always be annotated)
-            final_array = final_array.dropna(thresh=2)
+            # final_array = final_array.dropna(thresh=2)
 
             resp = make_response(final_array.to_csv(sep='\t', index=True))
             resp.headers["Content-Disposition"] = "attachment; filename=export.tsv"
@@ -257,6 +320,9 @@ def index():
 
 
     elif request.method == "GET":
+
+        # Clear out any old annotations from previous sessions (good idea!)
+        session.clear()
 
         return render_template("upload.html", form=upload_form)
 

@@ -29,6 +29,8 @@ def save_files(uploads):
             seq_names = [x.name for x in fasta]
             seq_array = DataFrame(seq_names, columns=['id'])
             seq_dict[path] = filename
+            seq_array.set_index('id')
+
             seq_dict['seq_array'] = seq_array.to_msgpack()
 
     return seq_dict

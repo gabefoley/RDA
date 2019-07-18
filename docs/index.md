@@ -113,7 +113,7 @@ So, our final annotations file to download will look like (scroll to see all col
 
 |  id | organism_uniprot  | organism_brenda	| organism_split| SUBSTRATE_PRODUCT_brenda |
 |---|---|---|---|---|
-|Q97UB2	|Saccharolobus solfataricus (strain ATCC 35092 / DSM 1617 / JCM 11322 / P2) (Sulfolobus solfataricus)	|	Sulfolobus solfataricus Q97UB2 SwissProt| Sulfolobus solfataricus	| FIXME_substrate	|
+|Q97UB2	|Saccharolobus solfataricus (strain ATCC 35092 / DSM 1617 / JCM 11322 / P2) (Sulfolobus solfataricus)	|	Sulfolobus solfataricus Q97UB2 SwissProt| Sulfolobus solfataricus	| '2,3-dihydroxy-3-methylpentanoate = 3-methyl-2-oxopentanoate + H2O'	|
 |A1B3F3	|Paracoccus denitrificans	|Paracoccus denitrificans	|Paracoccus denitrificans	| FIXME_substrate	|
 
 **Note: If there are multiple UniProt IDs that map to the same organism name, all of them will received the BRENDA annotations associated with that organism**
@@ -128,9 +128,9 @@ So the final annotations file to download will look like -
 
 |  id | mass_uniprot |
 |---|---|
-|	V9S9Y9|	FIXME mass|
-|	Q97UB2|	FIXME mass|
-|	A1B3F3|	FIXME mass|
+|	V9S9Y9|	59,780|
+|	Q97UB2|	59,422|
+|	A1B3F3|	63,455|
 
 **Note: We don't add in organism name FIXME: SHOULD WE?**
 
@@ -142,9 +142,9 @@ If we choose to combine a UniProt retrieval with a BRENDA based on UniProt ID, i
 
 |  id | mass_uniprot | SUBSTRATE_PRODUCT_brenda |
 |---|---|---|
-|	V9S9Y9|	FIXME mass|  |
-|	Q97UB2|	FIXME mass| FIXME substrate
-|	A1B3F3|	FIXME mass||
+|	V9S9Y9|	59,780|  |
+|	Q97UB2|	59,422| '2,3-dihydroxy-3-methylpentanoate = 3-methyl-2-oxopentanoate + H2O'
+|	A1B3F3|	63,455||
 
 **Note: As long as there is at least one annotation for a protein, it will be included**
 
@@ -152,9 +152,9 @@ If we choose to combine a UniProt retrieval with a BRENDA based on organism name
 
 |  id | organism_uniprot | organism_brenda | organism_split| mass_uniprot | SUBSTRATE_PRODUCT_brenda|
 |---|---|---|---|---|---|
-|	V9S9Y9|	Sulfolobus acidocaldarius SUSAZ | | |FIXME mass | |
-|	Q97UB2|	Saccharolobus solfataricus (strain ATCC 35092 / DSM 1617 / JCM 11322 / P2) (Sulfolobus solfataricus)	| Sulfolobus solfataricus Q97UB2 SwissProt| Saccharolobus solfataricus |FIXME mass | FIXME substrate |
-|	A1B3F3|	Paracoccus denitrificans| Paracoccus denitrificans |Paracoccus denitrificans | FIXME mass | FIXME substrate |
+|	V9S9Y9|	Sulfolobus acidocaldarius SUSAZ | | | 59,780 | |
+|	Q97UB2|	Saccharolobus solfataricus (strain ATCC 35092 / DSM 1617 / JCM 11322 / P2) (Sulfolobus solfataricus)	| Sulfolobus solfataricus Q97UB2 SwissProt| Saccharolobus solfataricus | 59,422 | '2,3-dihydroxy-3-methylpentanoate = 3-methyl-2-oxopentanoate + H2O' |
+|	A1B3F3|	Paracoccus denitrificans| Paracoccus denitrificans |Paracoccus denitrificans | 63,455 | FIXME substrate |
 
 
 ## Editing .tsv files
@@ -163,4 +163,6 @@ The downloaded annotation file is a .tsv file, we can easily be edited to remove
 
 Manually creating or adding in additional columns and annotations will also work and allow them to be mapped and queried by [GRASP](https://grasp.scmb.uq.edu.au). 
 
+## Blank columns and rows
 
+In order to make the process as transparent as possible, RDA does not remove columns or rows that end up blank, opting instead to pass these back to the user so that it can be clear which fields didn't map.
