@@ -19,9 +19,26 @@ class UploadForm(FlaskForm):
     upload_submit = SubmitField("Upload sequences ")
 
 
+class AnnotationForm(FlaskForm):
+    '''
+    Form to specify which annotation form should be displayed
+    '''
+    database = SelectField('Which database do you wish to retrieve annotations from?', choices=[('UniProt',
+                                                                                                 'UniProt'), ('BRENDA',
+                                                                                                 'BRENDA')])
+
+class DownloadForm(FlaskForm):
+    '''
+    Form to trigger the downloading of whatever has been annotated
+    '''
+    download = SubmitField('Download annotation file')
+
+
 class BrendaForm(FlaskForm):
     brenda_upload = FileField('Upload your BRENDA annotation file', validators=[DataRequired()])
-    brenda_species = BooleanField('Map based on organism name, not UniProt ID')
+    brenda_species = SelectField('Map based on organism name or UniProt ID', choices=[('Organism name',
+                                                                                      'Organism name'),
+                                                                                      ('UniProt ID', 'UniProt ID')])
     brenda_ubiquitous = BooleanField('Add annotations common to all')
     brenda_comments = BooleanField('Add annotations found in comments')
 
@@ -56,7 +73,7 @@ class BrendaForm(FlaskForm):
     brenda_retrieve = SubmitField("Retrieve BRENDA annotations")
 
 class UniProtForm(FlaskForm):
-    uniprot_select = SelectMultipleField('Which UniProt annotations should be retrieved?', choices=[('id', 'Entry'),
+    uniprot_select = SelectMultipleField('Which UniProt annotations should be retrieved?', choices=[
 ('entry name', 'Entry name'),
 ('genes', 'Gene names'),
 ('genes(PREFERRED)', 'Gene names (primary)'),
@@ -207,11 +224,7 @@ class UniProtForm(FlaskForm):
                                          validators=[DataRequired()])
     uniprot_retrieve = SubmitField("Retrieve UniProt annotations")
 
-class AnnotationForm(FlaskForm):
-    database = SelectField('Which database do you wish to retrieve annotations from?', choices=[('UniProt',
-                                                                                                 'UniProt'), ('BRENDA',
-                                                                                                 'BRENDA')])
 
-
-class DownloadForm(FlaskForm):
-    download = SubmitField('Download annotation file')
+class GOForm(FlaskForm):
+    go_term = FileField('Upload your BRENDA annotation file', validators=[DataRequired()])
+    uniprot_retrieve = SubmitField("Retrieve UniProt annotations")

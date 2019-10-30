@@ -29,16 +29,6 @@ jQuery(document).ready(function() {
 {% import "bootstrap/wtf.html" as wtf %}
 
 
-<div id="current_file">
-
-    Retrieving annotations for {{current_file}}.
-
-    <link href="{{url_for('index') }}" Click here to start again with new file.>
-
-
-</div>
-
-
 <form method="POST"    enctype="multipart/form-data">
 
 {{ form.hidden_tag() }}

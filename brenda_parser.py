@@ -7,7 +7,7 @@ class AnnotatedProtein():
         self.id = id
         self.name = name
         self.prot_annots = defaultdict(list)
-        self.prot_annots["organism"] = " ".join(self.name.split(" ")[0:2])
+        self.prot_annots["organism_split"] = " ".join(self.name.split(" ")[0:2])
         self.prot_annots["id"] = self.id
 
     def __str__(self):
@@ -39,11 +39,10 @@ def parse_brenda(filename, annot_dict = {}, uniprot_mapping=False, add_commonali
     end_pattern = "\r*\n"
 
     # Regex for extracting the primary annotation and associated numbers
-    annot_regex = re.compile('(?<=\w{2}[\t])(#(?P<primary_nums>(\d+(,)?)+)#\s+)?(?P<primary_annot>.*(?=[\s]+\(#)|.*)(' \
-                  r'?P<comments>[\w\W]*?>\))?')
+    annot_regex = re.compile('(?<=\w{2}[\t])(#(?P<primary_nums>(\d+(,)?)+)#\s+)?(?P<primary_annot>[\w\W]*?(?=>\n))')
 
     # Regex for extracting the comment annotation and associated number
-    comment_regex = re.compile('#(?P<comment_nums>(\d+(,)?)+)#\s*(?P<comment_annot>[^\<]*)')
+    comment_regex = re.compile('(?P<comment_nums>(\d+(,)?)+)#\s*(?P<comment_annot>[^\<]*)')
 
     for line in open(filename):
 
@@ -93,15 +92,26 @@ def parse_brenda(filename, annot_dict = {}, uniprot_mapping=False, add_commonali
                         # Remove any \n \t characters
                         primary_annot = re.sub('\n', '', primary_annot)
 
+
+                        if "(#" in primary_annot:
+                            comments = True
+                            comment_str = primary_annot.split("(#")[1]
+                            primary_annot = primary_annot.split("(#")[0]
+
+                        else:
+                            comments = False
+                            primary_annot = primary_annot.split("<")[0]
+
+
+
                         for primary_num in primary_num_list:
                             if (common_to_all and add_commonalities) or not common_to_all:
                                 if primary_num in num_to_prot: # Remove after finalising!!!!!!!!
                                     num_to_prot[primary_num].add_annotation(annot_key, primary_annot)
 
                         # If there are comments, process them
-                        if add_comments and annot.groupdict()['comments']:
-                            if annot.groupdict()['comments']:
-                                comment_str = annot.groupdict()['comments']
+                        if add_comments and comments:
+
                                 comments = comment_regex.finditer(comment_str)
                                 for comment in comments:
                                     # if comment.groupdict()['comment_nums'] in num_to_prot:
@@ -111,6 +121,7 @@ def parse_brenda(filename, annot_dict = {}, uniprot_mapping=False, add_commonali
 
                                     comment_annot = re.sub('\n', '', comment_annot)
                                     comment_annot = re.sub('\t', ' ', comment_annot)
+
 
                                     for comment_num in comment_num_list:
                                         if comment_num in num_to_prot: # Remove after finalising!!!!!!
@@ -127,11 +138,11 @@ def parse_brenda(filename, annot_dict = {}, uniprot_mapping=False, add_commonali
     return num_to_prot
 
 
-annot_dict = { "NAME" : "", "KM_VALUE": "KM", "EXPRESSION": "EXP", "SYSTEMATIC_NAME" : "SN", "SUBSTRATE_PRODUCT":
-    "SP", "SPECIFIC_ACTIVITY" : "SA", "SOURCE_TISSUE" : "ST", "KI_VALUE" : "KI", "REACTION": "RE", "REACTION_TYPE":
-    "RT"}
-
-# num_to_prot = parse_brenda('files/brenda.txt', annot_dict, add_commonalities=False, add_comments=False)
+# annot_dict = { "NAME" : "", "KM_VALUE": "KM", "EXPRESSION": "EXP", "SYSTEMATIC_NAME" : "SN", "SUBSTRATE_PRODUCT":
+#     "SP", "SPECIFIC_ACTIVITY" : "SA", "SOURCE_TISSUE" : "ST", "KI_VALUE" : "KI", "REACTION": "RE", "REACTION_TYPE":
+#     "RT"}
+#
+# num_to_prot = parse_brenda('files/final.txt', annot_dict, add_commonalities=False, add_comments=True)
 #
 # for enzyme in num_to_prot.values():
 #     print (enzyme.name)

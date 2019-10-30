@@ -1,4 +1,4 @@
-# Retrieval of Database Annotations
+# Retrieval of Database Annotations change
 
 [Retreivel of Database Annotations](https://mkdocs.org) is part of [GRASP-suite](https://grasp.scmb.uq.edu.au).
 
@@ -47,7 +47,7 @@ Would become
 Zymomonas mobilis
 ```
 
-To assess how well this has worked for your particular case, RDA outputs the following columns -
+To assess how well this has worked for your particular case, RDA outputs the following columns when using the BRENDA organism name mapping option -
 
 |  organism_uniprot  | organism_brenda  |organism_split|
 |---|---|---|
@@ -67,7 +67,7 @@ Lets assume we have the following files
 
 ```
 >tr|V9S9Y9|V9S9Y9_9CREN 
->sp|Q97UB2|ILVD_SULSO 
+>sp|Q8NQZ9|ILVD_CORGL
 >tr|A1B3F3|A1B3F3_PARDP
 ```
 **BRENDA annotations file** that has the following proteins -
@@ -76,7 +76,6 @@ PROTEIN
 PR    #1# Salmonella enterica subsp. enterica serovar Typhimurium   <10,12,16>
 PR    #2# Paracoccus denitrificans   <6>
 PR    #21# Corynebacterium glutamicum Q8NQZ9 UniProt <34,36>
-PR    #22# Sulfolobus solfataricus Q97UB2 SwissProt <28,39>
 ```
 
 And we want to retrieve the annotation for `SUBSTRATE_PRODUCT` from BRENDA and the annotation for `mass` from UniProt
@@ -91,9 +90,13 @@ So, our final annotations file to download will look like -
 
 |  id | SUBSTRATE_PRODUCT_brenda |
 |---|---|
-|	Q97UB2|	FIXME substrate product|
+|	Q97UB2| '2,3-dihydroxy-3-methylpentanoate = 3-methyl-2-oxopentanoate + H2O'|
+|	V9S9Y9|	|
+|	A1B3F3|	|
 
-**Note:we automatically add a suffix indicating which database the field refers to, in order to differentiate between them**
+**Note: we automatically add a suffix indicating which database the field refers to, in order to differentiate between them**
+
+**Note: we keep in a record of the sequence even if we didn't retrieve any annotations, to allow files to be easily manually updated**
 
 #### 2. Now let's try retrieving annotations from BRENDA based on the organism name
 
@@ -132,7 +135,6 @@ So the final annotations file to download will look like -
 |	Q97UB2|	59,422|
 |	A1B3F3|	63,455|
 
-**Note: We don't add in organism name FIXME: SHOULD WE?**
 
 #### 4. Now let's try combining retrievals from UniProt and BRENDA
 
@@ -145,8 +147,6 @@ If we choose to combine a UniProt retrieval with a BRENDA based on UniProt ID, i
 |	V9S9Y9|	59,780|  |
 |	Q97UB2|	59,422| '2,3-dihydroxy-3-methylpentanoate = 3-methyl-2-oxopentanoate + H2O'
 |	A1B3F3|	63,455||
-
-**Note: As long as there is at least one annotation for a protein, it will be included**
 
 If we choose to combine a UniProt retrieval with a BRENDA based on organism name, it will end up looking like this 
 

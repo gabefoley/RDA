@@ -25,13 +25,9 @@ def save_files(uploads):
         if filename != "":
             filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
             file.save(filepath)
-            fasta = sequence.readFastaFile(filepath)
-            seq_names = [x.name for x in fasta]
-            seq_array = DataFrame(seq_names, columns=['id'])
-            seq_dict[path] = filename
-            seq_array.set_index('id')
 
-            seq_dict['seq_array'] = seq_array.to_msgpack()
+
+            seq_dict['filepath'] = filepath
 
     return seq_dict
 
@@ -46,3 +42,20 @@ def save_brenda_annotations(uploads):
             file.save(filepath)
 
     return filepath
+
+def get_ids_from_fasta(filepath):
+    fasta = sequence.readFastaFile(filepath)
+
+    seq_names = [x.name for x in fasta]
+    seq_info = [x.info for x in fasta]
+    # seq_info = [" ".join(zip(x.name, x.info)) for x in fasta]
+    print (seq_names)
+    print (seq_info)
+    seq_array = DataFrame(seq_names, seq_info, columns=['id', 'info'])
+    seq_array.set_index('id')
+    return seq_array
+
+def chunks(l, n):
+    """Yield successive n-sized chunks from l."""
+    for i in range(0, len(l), n):
+        yield l[i:i + n]
