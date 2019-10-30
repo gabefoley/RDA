@@ -4,7 +4,7 @@ from models import UploadForm, AnnotationForm, UniProtForm, BrendaForm, Download
 import pandas as pd
 import brenda_parser
 import brenda_annotations
-import webservice
+import src.webservice
 from wtforms.validators import StopValidation
 
 import process_input
