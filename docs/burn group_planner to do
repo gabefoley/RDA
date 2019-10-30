@@ -1,0 +1,9 @@
+After sorting -
+
+- Make viewable by non-admin accounts
+- Refresh 
+
+
+sudo ./venv/bin/pip install flask_uploads
+
+UPDATE `users` SET `group_id` = 5 WHERE `id` = 87;
