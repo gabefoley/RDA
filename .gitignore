@@ -4,3 +4,4 @@
 /venv/*
 /files/*
 /tests/*
+/static/uploads/*
