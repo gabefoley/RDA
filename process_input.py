@@ -1,7 +1,7 @@
 from werkzeug.utils import secure_filename
 import os
 from rda import app
-import sequence
+import src.sequence
 from pandas import DataFrame
 
 
@@ -44,14 +44,18 @@ def save_brenda_annotations(uploads):
     return filepath
 
 def get_ids_from_fasta(filepath):
-    fasta = sequence.readFastaFile(filepath)
+    fasta = src.sequence.readFastaFile(filepath)
 
     seq_names = [x.name for x in fasta]
     seq_info = [x.info for x in fasta]
     # seq_info = [" ".join(zip(x.name, x.info)) for x in fasta]
     print (seq_names)
     print (seq_info)
-    seq_array = DataFrame(seq_names, seq_info, columns=['id', 'info'])
+
+    seq_tuples = list(zip(seq_names, seq_info))
+    seq_array = DataFrame(seq_tuples, columns=['id', 'info'])
+
+    # seq_array = DataFrame(seq_names, seq_info, columns=['id', 'info'])
     seq_array.set_index('id')
     return seq_array
 

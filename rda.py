@@ -73,7 +73,7 @@ def index():
             # Retrieve the UniProt annotations
             master_uniprot_dict = {}
             for chunk in process_input.chunks(id_list, 50):
-                uniprot_dict = webservice.getUniProtDict(chunk, columns)
+                uniprot_dict = src.webservice.getUniProtDict(chunk, columns)
                 master_uniprot_dict.update(uniprot_dict)
 
             global uniprot_array
@@ -236,7 +236,7 @@ def index():
                 master_uniprot_dict = {}
                 for chunk in process_input.chunks(id_list,50):
 
-                    uniprot_dict = webservice.getUniProtDict(chunk, ['organism'])
+                    uniprot_dict = src.webservice.getUniProtDict(chunk, ['organism'])
                     master_uniprot_dict.update(uniprot_dict)
 
                 for k, v in master_uniprot_dict.items():
