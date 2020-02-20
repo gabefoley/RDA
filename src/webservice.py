@@ -2,7 +2,7 @@ import urllib.request
 import urllib.parse
 import os
 from time import sleep
-import stats
+import src.stats
 from io import StringIO
 import gzip
 import ssl

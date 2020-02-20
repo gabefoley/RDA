@@ -1,5 +1,5 @@
 import pytest
-import webservice
+import src.webservice
 import pandas as pd
 
 @pytest.fixture()
